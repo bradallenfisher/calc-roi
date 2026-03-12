@@ -1,45 +1,52 @@
 /**
  * ASAP ECC ROI Calculator
- * Matches Excel logic from ASAP ECC ROI Calculator 20260130 JS.xlsx
+ * Based on ROI Cost Categories 20260227 JS.xlsx
+ * Formulas from original ASAP ECC ROI Calculator 20260130 JS.xlsx
  */
 
 (function () {
   'use strict';
 
-  // Input field IDs
+  // Cost lookup table from ROI Cost Categories 20260227 JS.xlsx
+  // Tier 0: pop >= 2.5M, Tier 1: 500K-2.5M, Tier 2: 100K-500K, Tier 3: < 100K
+  const COST_TIERS = [
+    { popMin: 2500000, popMax: null, upfront: 82160, recurring: 4500 },
+    { popMin: 500000, popMax: 2499999, upfront: 56080, recurring: 3600 },
+    { popMin: 100000, popMax: 499999, upfront: 40720, recurring: 2700 },
+    { popMin: 0, popMax: 99999, upfront: 28040, recurring: 1800 }
+  ];
+
   const INPUTS = {
-    monthlyAlarmRequests: 'monthlyAlarmRequests',
-    asapTransitionPct: 'asapTransitionPct',
+    populationServed: 'populationServed',
     monthly911Calls: 'monthly911Calls',
-    holdTime: 'holdTime',
-    numCallbacks: 'numCallbacks',
-    callbackTime: 'callbackTime',
-    processingTime: 'processingTime',
-    asapProcessingTime: 'asapProcessingTime',
-    annualCompensation: 'annualCompensation',
-    upfrontCost: 'upfrontCost',
-    recurringCost: 'recurringCost',
-    colaPercent: 'colaPercent'
+    monthlyAlarmRequests: 'monthlyAlarmRequests'
   };
 
-  // Output element IDs
   const OUTPUTS = {
+    minutesDispatchSaved: 'minutes-dispatch-saved',
+    tcTimeSaved: 'tc-time-saved',
+    monthlyHoursSaved: 'monthly-hours-saved',
+    monthlyValue: 'monthly-value',
     annualValue: 'annual-value',
-    roi: 'roi',
-    recurringCostDisplay: 'recurring-cost',
-    upfrontCostDisplay: 'upfront-cost-display',
-    paybackPeriod: 'payback-period',
-    monthlyReallocated: 'monthly-reallocated',
-    annualReallocated: 'annual-reallocated',
-    secondsSaved911: 'seconds-saved-911',
-    secondsSavedAlarm: 'seconds-saved-alarm',
-    annualHoursSaved: 'annual-hours-saved'
+    roi: 'roi'
+  };
+
+  // Hidden/default values (from assumptions footer)
+  const DEFAULTS = {
+    asapTransitionPct: 0.75,
+    holdTime: 120,
+    numCallbacks: 2.7,
+    callbackTime: 60,
+    processingTime: 120,
+    asapProcessingTime: 20,
+    annualCompensation: 79500,
+    colaPercent: 0.03
   };
 
   function getInput(id) {
     const el = document.getElementById(id);
     if (!el) return null;
-    const val = parseFloat(el.value);
+    const val = parseFloat(String(el.value).replace(/,/g, ''));
     return isNaN(val) ? null : val;
   }
 
@@ -49,45 +56,54 @@
     el.textContent = formatter ? formatter(value) : String(value);
   }
 
+  function lookupCosts(population) {
+    if (population == null || population < 0) return { upfront: 0, recurring: 0 };
+    for (const tier of COST_TIERS) {
+      const aboveMin = tier.popMin === null || population >= tier.popMin;
+      const belowMax = tier.popMax === null || population <= tier.popMax;
+      if (aboveMin && belowMax) return { upfront: tier.upfront, recurring: tier.recurring };
+    }
+    return { upfront: 0, recurring: 0 };
+  }
+
   function formatCurrency(value) {
     if (value == null || isNaN(value)) return '—';
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
-    }).format(value);
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(Math.round(value));
   }
 
   function formatPercent(value) {
     if (value == null || isNaN(value)) return '—';
-    return value.toFixed(1) + '%';
+    return (Math.round(value * 10) / 10).toFixed(1) + '%';
   }
 
   function formatNumber(value, decimals) {
     if (value == null || isNaN(value)) return '—';
-    return value.toFixed(decimals ?? 2);
+    const d = decimals ?? 2;
+    return (Math.round(value * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d);
   }
 
   function validateInputs(data) {
     const errors = [];
-    if (data.monthlyAlarmRequests != null && data.monthlyAlarmRequests < 0) {
-      errors.push('Monthly alarm requests cannot be negative');
+    if (data.populationServed == null || data.populationServed <= 0) {
+      errors.push('Population Served is required and must be positive');
     }
-    if (data.asapTransitionPct != null && (data.asapTransitionPct < 0 || data.asapTransitionPct > 100)) {
-      errors.push('Transition percent must be between 0 and 100');
-    }
-    if (data.monthly911Calls != null && data.monthly911Calls <= 0) {
-      errors.push('Monthly 911 calls must be positive');
+    if (data.monthly911Calls == null || data.monthly911Calls <= 0) {
+      errors.push('Monthly 911 Calls is required and must be positive');
     }
     return errors;
   }
 
   function calculate() {
-    const data = {};
-    for (const [key, id] of Object.entries(INPUTS)) {
-      data[key] = getInput(id);
-    }
+    const populationServed = getInput(INPUTS.populationServed);
+    const monthly911Calls = getInput(INPUTS.monthly911Calls);
+    let monthlyAlarmRequests = getInput(INPUTS.monthlyAlarmRequests);
+
+    const data = { populationServed, monthly911Calls, monthlyAlarmRequests };
 
     const validationErrors = validateInputs(data);
     if (validationErrors.length > 0) {
@@ -95,97 +111,72 @@
       return null;
     }
 
-    const asapTransitionPctDecimal = (data.asapTransitionPct ?? 100) / 100;
+    // Monthly alarm requests: 10% of 911 calls if not provided
+    if (monthlyAlarmRequests == null || monthlyAlarmRequests <= 0) {
+      monthlyAlarmRequests = Math.round(monthly911Calls * 0.1);
+    }
 
-    // 5.1 Derived Values
-    const transitionedRequests = (data.monthlyAlarmRequests ?? 1000) * asapTransitionPctDecimal;
+    const { upfront: upfrontCost, recurring: recurringCost } = lookupCosts(populationServed);
 
-    // 5.2 Time Calculations
-    const holdTime = data.holdTime ?? 0;
-    const numCallbacks = data.numCallbacks ?? 2;
-    const callbackTime = data.callbackTime ?? 90;
-    const processingTime = data.processingTime ?? 120;
-    const asapProcessingTime = data.asapProcessingTime ?? 45;
+    const transitionedRequests = monthlyAlarmRequests * DEFAULTS.asapTransitionPct;
 
-    const currentDispatchTime = holdTime + (numCallbacks * callbackTime) + processingTime;
-    const secondsSavedPerAlarm = currentDispatchTime - asapProcessingTime;
+    const currentDispatchTime =
+      DEFAULTS.holdTime +
+      DEFAULTS.numCallbacks * DEFAULTS.callbackTime +
+      DEFAULTS.processingTime;
+    const secondsSavedPerAlarm = currentDispatchTime - DEFAULTS.asapProcessingTime;
 
-    // IMPORTANT: Spreadsheet excludes hold time
+    // Monthly reallocated hours (hold time excluded per original spreadsheet)
     const monthlyReallocatedHours =
-      (transitionedRequests * ((numCallbacks * callbackTime) + processingTime)) / 3600;
+      (transitionedRequests *
+        (DEFAULTS.numCallbacks * DEFAULTS.callbackTime + DEFAULTS.processingTime)) /
+      3600;
 
-    const annualReallocatedHours = monthlyReallocatedHours * 12;
-
-    const monthly911Calls = data.monthly911Calls ?? 10000;
-    const secondsSavedPer911Call =
-      monthly911Calls > 0 ? (annualReallocatedHours * 3600) / monthly911Calls : 0;
-
-    const annualHoursSavedFromAlarmProcessing = (transitionedRequests * secondsSavedPerAlarm * 12) / 3600;
-
-    // 5.3 Labor Cost Calculations
-    const annualCompensation = data.annualCompensation ?? 75000;
-    const hourlyRate = annualCompensation / 2080;
+    const hourlyRate = DEFAULTS.annualCompensation / 2080;
     const monthlyValue = monthlyReallocatedHours * hourlyRate;
     const annualValue = monthlyValue * 12;
 
-    const recurringCost = data.recurringCost ?? 0;
-    const upfrontCost = data.upfrontCost ?? 0;
-
-    // 5.4 ROI Calculation (match Excel exactly)
     let roi;
     if (upfrontCost === 0) {
-      roi = null; // N/A
+      roi = null;
     } else {
-      roi = ((annualValue - recurringCost) / Math.abs(upfrontCost) + (data.colaPercent ?? 0) / 100) * 100;
+      roi =
+        ((annualValue - recurringCost) / Math.abs(upfrontCost) + DEFAULTS.colaPercent) * 100;
     }
 
-    // Payback period
-    const netAnnual = annualValue - recurringCost;
-    const paybackPeriod = netAnnual > 0 ? upfrontCost / netAnnual : null;
+    // Minutes to dispatch saved per incident (Excel: G36/60 = G37)
+    const minutesDispatchSaved = secondsSavedPerAlarm / 60;
 
     return {
-      annualValue,
-      recurringCost,
-      upfrontCost,
-      roi,
-      paybackPeriod,
-      monthlyReallocatedHours,
-      annualReallocatedHours,
-      secondsSavedPer911Call,
+      minutesDispatchSaved,
       secondsSavedPerAlarm,
-      annualHoursSavedFromAlarmProcessing
+      monthlyReallocatedHours,
+      monthlyValue,
+      annualValue,
+      roi
     };
   }
 
   function updateUI(result) {
     if (!result) return;
 
-    setOutput(OUTPUTS.annualValue, result.annualValue, formatCurrency);
-    setOutput(OUTPUTS.roi, result.roi, (v) => (v == null ? 'N/A' : formatPercent(v)));
-    setOutput(OUTPUTS.recurringCostDisplay, result.recurringCost, formatCurrency);
-    setOutput(OUTPUTS.upfrontCostDisplay, result.upfrontCost, formatCurrency);
     setOutput(
-      OUTPUTS.paybackPeriod,
-      result.paybackPeriod,
-      (v) => (v == null || v <= 0 ? '—' : v.toFixed(1) + ' years')
-    );
-
-    setOutput(OUTPUTS.monthlyReallocated, result.monthlyReallocatedHours, formatNumber);
-    setOutput(OUTPUTS.annualReallocated, result.annualReallocatedHours, formatNumber);
-    setOutput(
-      OUTPUTS.secondsSaved911,
-      result.secondsSavedPer911Call,
-      (v) => (v == null || isNaN(v) ? '0' : Math.round(v).toString())
+      OUTPUTS.minutesDispatchSaved,
+      result.minutesDispatchSaved,
+      (v) => (v == null || isNaN(v) ? '0' : formatNumber(v, 2))
     );
     setOutput(
-      OUTPUTS.secondsSavedAlarm,
+      OUTPUTS.tcTimeSaved,
       result.secondsSavedPerAlarm,
       (v) => (v == null || isNaN(v) ? '0' : Math.round(v).toString())
     );
-    setOutput(
-      OUTPUTS.annualHoursSaved,
-      result.annualHoursSavedFromAlarmProcessing,
-      formatNumber
+    setOutput(OUTPUTS.monthlyHoursSaved, result.monthlyReallocatedHours, (v) =>
+      formatNumber(v, 2)
+    );
+    setOutput(OUTPUTS.monthlyValue, result.monthlyValue, formatCurrency);
+    setOutput(OUTPUTS.annualValue, result.annualValue, formatCurrency);
+    setOutput(OUTPUTS.roi, result.roi, (v) =>
+      v == null ? 'N/A' : formatPercent(v)
     );
   }
 
@@ -198,27 +189,11 @@
     }
   }
 
-  // Auto-derive monthly 911 calls from alarm requests * 10 when alarm requests change
-  function init911Derivation() {
-    const alarmInput = document.getElementById(INPUTS.monthlyAlarmRequests);
-    const callsInput = document.getElementById(INPUTS.monthly911Calls);
-    if (!alarmInput || !callsInput) return;
-
-    alarmInput.addEventListener('change', () => {
-      const alarms = parseFloat(alarmInput.value);
-      if (!isNaN(alarms) && callsInput.value === '10000') {
-        callsInput.value = Math.round(alarms * 10);
-      }
-    });
-  }
-
   function init() {
     const calcBtn = document.getElementById('btn-calculate');
     if (calcBtn) {
       calcBtn.addEventListener('click', runCalculation);
     }
-
-    init911Derivation();
   }
 
   if (document.readyState === 'loading') {

@@ -23,78 +23,46 @@
 
       <!-- Inputs section -->
       <section class="inputs-section">
-        <!-- Defaults match ASAP ECC ROI Calculator 20260130 JS.xlsx column G -->
         <div class="input-group">
-          <h3>Volume & Adoption</h3>
+          <h3>Input Data</h3>
           <div class="field-row">
-            <label for="monthlyAlarmRequests">Monthly alarm requests for service:</label>
-            <input type="number" id="monthlyAlarmRequests" value="1000" min="1" required>
+            <label for="populationServed">Population Served <span class="required">*</span></label>
+            <input type="number" id="populationServed" placeholder="e.g. 500000" min="1" required>
           </div>
           <div class="field-row">
-            <label for="asapTransitionPct">Percent expected to transition to ASAP (%):</label>
-            <input type="number" id="asapTransitionPct" value="50" min="0" max="100" step="0.1" required>
+            <label for="monthly911Calls">Monthly 911 Calls <span class="required">*</span></label>
+            <input type="number" id="monthly911Calls" placeholder="e.g. 10000" min="1" required>
           </div>
           <div class="field-row">
-            <label for="monthly911Calls">Monthly 911 calls:</label>
-            <input type="number" id="monthly911Calls" value="10000" min="1" required>
-          </div>
-        </div>
-
-        <div class="input-group">
-          <h3>Current-State Call Handling (seconds)</h3>
-          <div class="field-row">
-            <label for="holdTime">Hold time on admin line:</label>
-            <input type="number" id="holdTime" value="120" min="0" step="1">
-          </div>
-          <div class="field-row">
-            <label for="numCallbacks">Number of callbacks needed:</label>
-            <input type="number" id="numCallbacks" value="2.7" min="0" step="0.1">
-          </div>
-          <div class="field-row">
-            <label for="callbackTime">Time per callback (seconds):</label>
-            <input type="number" id="callbackTime" value="60" min="0" step="1">
-          </div>
-          <div class="field-row">
-            <label for="processingTime">Average telecommunicator processing time (seconds):</label>
-            <input type="number" id="processingTime" value="120" min="0" step="1">
-          </div>
-        </div>
-
-        <div class="input-group">
-          <h3>Future-State (ASAP)</h3>
-          <div class="field-row">
-            <label for="asapProcessingTime">ASAP Service alarm request processing time (seconds):</label>
-            <input type="number" id="asapProcessingTime" value="20" min="0" step="1">
-          </div>
-        </div>
-
-        <div class="input-group">
-          <h3>Cost Assumptions</h3>
-          <div class="field-row">
-            <label for="annualCompensation">Average telecommunicator burdened compensation (annual):</label>
-            <input type="number" id="annualCompensation" value="79500" min="0" step="1000">
-          </div>
-          <div class="field-row">
-            <label for="upfrontCost">Upfront implementation cost:</label>
-            <input type="number" id="upfrontCost" value="30000" min="0" step="1000">
-          </div>
-          <div class="field-row">
-            <label for="recurringCost">Recurring annual CAD interface maintenance fee:</label>
-            <input type="number" id="recurringCost" value="3000" min="0" step="1000">
-          </div>
-          <div class="field-row">
-            <label for="colaPercent">Cost of living comp increase per year (%):</label>
-            <input type="number" id="colaPercent" value="3" min="-100" max="100" step="0.1">
+            <label for="monthlyAlarmRequests">Monthly Alarm Requests <span class="optional">(optional)</span></label>
+            <input type="number" id="monthlyAlarmRequests" placeholder="Leave blank to auto-calculate (10% of 911 calls)" min="0" step="1">
           </div>
         </div>
 
         <button type="button" class="btn-calculate" id="btn-calculate">Calculate ROI</button>
+
       </section>
 
-      <!-- Results highlight band - shown only after Calculate ROI is clicked -->
+      <!-- Results - shown only after Calculate ROI is clicked -->
       <section class="results-band results-band--hidden" id="results-band">
-        <h2 class="results-band-title">Your Calculation Results</h2>
+        <h2 class="results-band-title">Results(Monthly)</h2>
         <div class="results-grid">
+          <div class="result-cell primary">
+            <span class="result-label">Minutes to Dispatch Saved Per Incident</span>
+            <span class="result-value" id="minutes-dispatch-saved">0</span>
+          </div>
+          <div class="result-cell primary">
+            <span class="result-label">Telecommunicator Time Saved Per Incident (sec)</span>
+            <span class="result-value" id="tc-time-saved">0</span>
+          </div>
+          <div class="result-cell primary">
+            <span class="result-label">Monthly Telecommunicator Hours Saved</span>
+            <span class="result-value" id="monthly-hours-saved">0.00</span>
+          </div>
+          <div class="result-cell primary">
+            <span class="result-label">Monthly Value of Reallocated Time</span>
+            <span class="result-value" id="monthly-value">$0.00</span>
+          </div>
           <div class="result-cell primary">
             <span class="result-label">Annual Value of Reallocated Time</span>
             <span class="result-value" id="annual-value">$0.00</span>
@@ -103,39 +71,24 @@
             <span class="result-label">ROI</span>
             <span class="result-value" id="roi">—</span>
           </div>
-          <div class="result-cell secondary">
-            <span class="result-label">Recurring Annual Fee</span>
-            <span class="result-value" id="recurring-cost">$0.00</span>
-          </div>
-          <div class="result-cell secondary">
-            <span class="result-label">Upfront Cost</span>
-            <span class="result-value" id="upfront-cost-display">$0.00</span>
-          </div>
-          <div class="result-cell secondary">
-            <span class="result-label">Payback Period</span>
-            <span class="result-value" id="payback-period">—</span>
-          </div>
-          <div class="result-cell secondary">
-            <span class="result-label">Monthly Reallocated Hours</span>
-            <span class="result-value" id="monthly-reallocated">0.00</span>
-          </div>
-          <div class="result-cell secondary">
-            <span class="result-label">Annual Reallocated Hours</span>
-            <span class="result-value" id="annual-reallocated">0.00</span>
-          </div>
-          <div class="result-cell secondary">
-            <span class="result-label">Seconds Saved Per 911 Call</span>
-            <span class="result-value" id="seconds-saved-911">0</span>
-          </div>
-          <div class="result-cell secondary">
-            <span class="result-label">Seconds Saved Per Alarm</span>
-            <span class="result-value" id="seconds-saved-alarm">0</span>
-          </div>
-          <div class="result-cell secondary">
-            <span class="result-label">Annual Hours Saved from Alarm Processing</span>
-            <span class="result-value" id="annual-hours-saved">0.00</span>
-          </div>
         </div>
+      </section>
+
+      <section class="assumptions-section">
+        <footer class="assumptions-footer">
+          <h4>Assumptions</h4>
+          <ul>
+            <li>Assuming 75% of alarm traffic will transition through the platform</li>
+            <li>Hold time on admin line: 120 seconds (2 minutes)</li>
+            <li>Number of callbacks needed: 2.7</li>
+            <!--<li>Time per callback: 60 seconds</li>
+            <li>Average telecommunicator processing time: 120 seconds</li>
+            <li>ASAP Service alarm request processing time: 20 seconds</li>
+            <li>Average telecommunicator burdened compensation: $79,500/year</li>
+            <li>Cost of living comp increase per year: 3%</li>
+            <li>Upfront & recurring costs: lookup based on population served (ROI Cost Categories 20260227)</li>-->
+          </ul>
+        </footer>
       </section>
     </div>
   </main>

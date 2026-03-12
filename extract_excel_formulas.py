@@ -8,7 +8,16 @@ Output is written to excel_formulas.txt for easy review.
 import openpyxl
 from pathlib import Path
 
-XLSX_PATH = Path(__file__).parent / "ASAP ECC ROI Calculator 20260130 JS.xlsx"
+# Set which file to extract: "original" or "cost_categories"
+EXTRACT_FILE = "cost_categories"
+
+XLSX_PATHS = {
+    "original": Path(__file__).parent / "ASAP ECC ROI Calculator 20260130 JS.xlsx",
+    "cost_categories": Path(__file__).parent / "ROI Cost Categories 20260227 JS.xlsx",
+}
+XLSX_PATH = XLSX_PATHS.get(EXTRACT_FILE, XLSX_PATHS["original"])
+if not XLSX_PATH.exists():
+    XLSX_PATH = XLSX_PATHS["original"]
 OUTPUT_PATH = Path(__file__).parent / "excel_formulas.txt"
 
 

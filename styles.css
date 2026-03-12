@@ -205,6 +205,45 @@ body {
   background: var(--red-hover);
 }
 
+.required {
+  color: var(--red);
+}
+
+.optional {
+  font-weight: 400;
+  color: var(--text-muted);
+  font-size: 0.85em;
+}
+
+.assumptions-section {
+  padding: 2rem;
+}
+
+.assumptions-footer {
+  margin-top: 0;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.assumptions-footer h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.assumptions-footer ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.assumptions-footer li {
+  margin-bottom: 0.25rem;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .main {

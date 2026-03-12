@@ -8,7 +8,34 @@ Interactive demo calculator for ASAP Service ROI. Static HTML + Vanilla JavaScri
    ```bash
    python3 -m http.server 8080
    ```
-2. Enter inputs and click **Calculate ROI** to see results.
+2. Enter **Population Served** and **Monthly 911 Calls** (required), optionally **Monthly Alarm Requests**.
+3. Click **Calculate ROI** to see results.
+
+## Inputs
+
+| Field | Required | Notes |
+|-------|----------|-------|
+| Population Served | Yes | Used for upfront & recurring cost lookup |
+| Monthly 911 Calls | Yes | |
+| Monthly Alarm Requests | No | If blank, auto-calculated as 10% of 911 calls |
+
+## Outputs
+
+- Minutes to Dispatch Saved/Incident
+- Telecommunicator Time Saved/Incident (seconds)
+- Monthly Telecommunicator Hours Saved
+- Monthly Value of Reallocated Time
+- Annual Value of Reallocated Time
+- ROI
+
+## Cost Lookups (ROI Cost Categories 20260227 JS.xlsx)
+
+| Population | Upfront Cost | Recurring/Year |
+|------------|--------------|----------------|
+| ≥ 2,500,000 | $82,160 | $4,500 |
+| 500,000 – 2,499,999 | $56,080 | $3,600 |
+| 100,000 – 499,999 | $40,720 | $2,700 |
+| &lt; 100,000 | $28,040 | $1,800 |
 
 ## Project Structure
 
@@ -17,40 +44,20 @@ calcroi/
 ├── index.html      # Main app
 ├── styles.css      # Layout & styling
 ├── calculator.js   # Calculation logic
-├── PRD.md          # Product requirements
+├── PRD.md          # Product requirements (legacy)
 ├── requirements.txt
 ├── extract_excel_formulas.py   # Extracts formulas from Excel (requires venv)
+├── ROI Cost Categories 20260227 JS.xlsx   # Cost lookup source
 └── venv/           # Python venv for openpyxl
 ```
 
-## Default Values
+## Assumptions (from footer)
 
-Default inputs match `ASAP ECC ROI Calculator 20260130 JS.xlsx` column G for testing parity.
-
----
-
-## Model Assumptions (Dev Only)
-
-**Do not expose these formulas publicly.** This section is for developer reference only.
-
-### Formula Definitions
-
-| Output | Formula |
-|--------|---------|
-| Transitioned Requests | `monthlyAlarmRequests × asapTransitionPct` |
-| Current Dispatch Time | `holdTime + (numCallbacks × callbackTime) + processingTime` |
-| Seconds Saved Per Alarm | `currentDispatchTime − asapProcessingTime` |
-| Monthly Reallocated Hours | `(transitionedRequests × ((numCallbacks × callbackTime) + processingTime)) ÷ 3600` |
-| Annual Reallocated Hours | `monthlyReallocatedHours × 12` |
-| Seconds Saved Per 911 Call | `(annualReallocatedHours × 3600) ÷ monthly911Calls` |
-| Hourly Rate | `annualCompensation ÷ 2080` |
-| Monthly Value | `monthlyReallocatedHours × hourlyRate` |
-| Annual Value | `monthlyValue × 12` |
-| ROI | `(annualValue − recurringCost) ÷ ABS(upfrontCost) + colaPercent` |
-| Payback Period | `upfrontCost ÷ (annualValue − recurringCost)` years |
-
-### Notes
-
-- **2080** = assumed annual work hours for hourly rate.
-- **Hold time excluded:** Monthly reallocated hours use only callback time + processing time; hold time is not included (per spreadsheet logic).
-- **ROI formula:** Matches Excel exactly; not standard ROI. Do not change unless client approves.
+- 75% of alarm traffic will transition
+- Hold time: 120 sec (2 min)
+- Callbacks: 2.7
+- Time per callback: 60 sec
+- Processing time: 120 sec
+- ASAP processing time: 20 sec
+- Annual compensation: $79,500
+- COLA: 3%
