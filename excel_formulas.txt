@@ -1,0 +1,96 @@
+
+============================================================
+SHEET: Sheet1
+============================================================
+A4: (empty) | B4: 'Monthly 911 calls' | C4: (empty) | D4: (empty) | E4: (empty) | F4: (empty) | G4: FORMULA: =G5*10 | H4: (empty)
+A7: (empty) | B7: (empty) | C7: (empty) | D7: 'Monthly alarm requests to be handled by ASAP Service' | E7: (empty) | F7: (empty) | G7: FORMULA: =G5*G6 | H7: (empty)
+A13: (empty) | B13: (empty) | C13: (empty) | D13: (empty) | E13: 'Total time associated with callbacks' | F13: (empty) | G13: FORMULA: =G11*G12 | H13: (empty)
+A15: (empty) | B15: (empty) | C15: (empty) | D15: 'Total time' | E15: (empty) | F15: (empty) | G15: FORMULA: =SUM(G10,G13:G14) | H15: (empty)
+A16: (empty) | B16: (empty) | C16: (empty) | D16: (empty) | E16: 'In minutes' | F16: (empty) | G16: FORMULA: =G15/60 | H16: (empty)
+A20: (empty) | B20: 'Monthly reallocated telecommunicator time' | C20: (empty) | D20: (empty) | E20: (empty) | F20: (empty) | G20: FORMULA: =G7*SUM(G13:G14) | H20: (empty)
+A21: (empty) | B21: (empty) | C21: 'In minutes' | D21: (empty) | E21: (empty) | F21: (empty) | G21: FORMULA: =G20/60 | H21: (empty)
+A22: (empty) | B22: (empty) | C22: 'In hours' | D22: (empty) | E22: (empty) | F22: (empty) | G22: FORMULA: =G21/60 | H22: (empty)
+A23: (empty) | B23: (empty) | C23: (empty) | D23: 'Telecommunicator time reallocated per year (hours)' | E23: (empty) | F23: (empty) | G23: FORMULA: =G22*12 | H23: (empty)
+A24: (empty) | B24: (empty) | C24: (empty) | D24: (empty) | E24: 'Reduction in time needed to process each 911 call' | F24: (empty) | G24: FORMULA: =G23*3600/G4 | H24: (empty)
+A27: (empty) | B27: (empty) | C27: 'Hourly' | D27: (empty) | E27: (empty) | F27: (empty) | G27: FORMULA: =G26/2080 | H27: (empty)
+A28: (empty) | B28: 'Value of reallocated time/month' | C28: (empty) | D28: (empty) | E28: (empty) | F28: (empty) | G28: FORMULA: =G22*G27 | H28: (empty)
+A29: (empty) | B29: (empty) | C29: 'Value of reallocated time/year' | D29: (empty) | E29: (empty) | F29: (empty) | G29: FORMULA: =G28*12 | H29: (empty)
+A34: (empty) | B34: 'Return on investment' | C34: (empty) | D34: (empty) | E34: (empty) | F34: (empty) | G34: FORMULA: =(G29-G33)/ABS(G32)+G30 | H34: (empty)
+A36: (empty) | B36: 'Reduction in time needed to dispatch an alam request' | C36: (empty) | D36: (empty) | E36: (empty) | F36: (empty) | G36: FORMULA: =G15-G18 | H36: (empty)
+A37: (empty) | B37: (empty) | C37: 'Minutes' | D37: (empty) | E37: (empty) | F37: (empty) | G37: FORMULA: =G36/60 | H37: (empty)
+A38: (empty) | B38: (empty) | C38: (empty) | D38: 'Time saved per month (minutes)' | E38: (empty) | F38: (empty) | G38: FORMULA: =G7*G37 | H38: (empty)
+A39: (empty) | B39: (empty) | C39: (empty) | D39: (empty) | E39: 'In hours' | F39: (empty) | G39: FORMULA: =G38/60 | H39: (empty)
+A40: (empty) | B40: (empty) | C40: (empty) | D40: 'Time saved per year' | E40: (empty) | F40: (empty) | G40: FORMULA: =G39*12 | H40: (empty)
+
+
+============================================================
+COMPUTED VALUES (for formula cells)
+============================================================
+
+--- Sheet1 ---
+  A1: ASAP ECC ROI Calculator
+  A2: (Call processing times in seconds unless otherwise stated)
+  B4: Monthly 911 calls
+  G4: 10000
+  B5: Monthly alarm requests for service
+  G5: 1000
+  C6: Percent expected to transition to ASAP Service
+  G6: 0.5
+  D7: Monthly alarm requests to be handled by ASAP Service
+  G7: 500
+  B9: Alarm request for service call
+  C10: Hold time on admin line
+  G10: 120
+  C11: Number of call backs needed
+  G11: 2.7
+  D12: Time per callback
+  G12: 60
+  E13: Total time associated with callbacks
+  G13: 162
+  C14: Average telecommunicator processing time
+  G14: 120
+  D15: Total time
+  G15: 402
+  E16: In minutes
+  G16: 6.7
+  B18: ASAP Service alarm request processing time
+  G18: 20
+  B20: Monthly reallocated telecommunicator time
+  G20: 141000
+  C21: In minutes
+  G21: 2350
+  C22: In hours
+  G22: 39.166666666666664
+  D23: Telecommunicator time reallocated per year (hours)
+  G23: 470
+  E24: Reduction in time needed to process each 911 call
+  G24: 169.2
+  B26: Average telecommunicator burdened compensation
+  G26: 79500
+  C27: Hourly
+  G27: 38.22115384615385
+  B28: Value of reallocated time/month
+  G28: 1496.9951923076922
+  C29: Value of reallocated time/year
+  G29: 17963.942307692305
+  B30: Cost of living compensation increase per year
+  G30: 0.03
+  B32: Upfront implementation cost
+  G32: 30000
+  B33: Recurring annual CAD interface maintenance fee
+  G33: 3000
+  B34: Return on investment
+  G34: 0.5287980769230768
+  B36: Reduction in time needed to dispatch an alam request
+  G36: 382
+  C37: Minutes
+  G37: 6.366666666666666
+  D38: Time saved per month (minutes)
+  G38: 3183.333333333333
+  E39: In hours
+  G39: 53.05555555555555
+  D40: Time saved per year
+  G40: 636.6666666666666
+  B42: Items not quantified
+  C43: Improved metrics on alarm calls
+  C44: More accurate responses (no transcription errors, AVS-01)
