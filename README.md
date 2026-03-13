@@ -19,14 +19,14 @@ Interactive demo calculator for ASAP Service ROI. Static HTML + Vanilla JavaScri
 | Monthly 911 Calls | Yes | |
 | Monthly Alarm Requests | No | If blank, auto-calculated as 10% of 911 calls |
 
-## Outputs
+## Outputs (Benefits Realized)
 
-- Minutes to Dispatch Saved/Incident
-- Telecommunicator Time Saved/Incident (seconds)
+- Minutes to Dispatch Saved Per Incident
+- Telecommunicator Time Saved Per Incident (min)
 - Monthly Telecommunicator Hours Saved
 - Monthly Value of Reallocated Time
 - Annual Value of Reallocated Time
-- ROI
+- Return on Investment
 
 ## Cost Lookups (ROI Cost Categories 20260227 JS.xlsx)
 
@@ -55,7 +55,7 @@ calcroi/
 
 - 75% of alarm traffic will transition
 - Hold time: 120 sec (2 min)
-- Callbacks: 2.7
+- Callbacks: 2
 - Time per callback: 60 sec
 - Processing time: 120 sec
 - ASAP processing time: 20 sec

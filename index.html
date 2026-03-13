@@ -44,30 +44,34 @@
 
       <!-- Results - shown only after Calculate ROI is clicked -->
       <section class="results-band results-band--hidden" id="results-band">
-        <h2 class="results-band-title">Results(Monthly)</h2>
+        <h2 class="results-band-title">Benefits Realized</h2>
         <div class="results-grid">
           <div class="result-cell primary">
             <span class="result-label">Minutes to Dispatch Saved Per Incident</span>
             <span class="result-value" id="minutes-dispatch-saved">0</span>
           </div>
           <div class="result-cell primary">
-            <span class="result-label">Telecommunicator Time Saved Per Incident (sec)</span>
+            <span class="result-label">Telecommunicator Time Saved Per Incident (min)</span>
             <span class="result-value" id="tc-time-saved">0</span>
           </div>
           <div class="result-cell primary">
             <span class="result-label">Monthly Telecommunicator Hours Saved</span>
-            <span class="result-value" id="monthly-hours-saved">0.00</span>
+            <span class="result-value" id="monthly-hours-saved">0.0</span>
           </div>
+        </div>
+        <div class="results-value-row">
           <div class="result-cell primary">
             <span class="result-label">Monthly Value of Reallocated Time</span>
-            <span class="result-value" id="monthly-value">$0.00</span>
+            <span class="result-value" id="monthly-value">$0</span>
           </div>
           <div class="result-cell primary">
             <span class="result-label">Annual Value of Reallocated Time</span>
-            <span class="result-value" id="annual-value">$0.00</span>
+            <span class="result-value" id="annual-value">$0</span>
           </div>
+        </div>
+        <div class="results-grid">
           <div class="result-cell primary">
-            <span class="result-label">ROI</span>
+            <span class="result-label">Return on Investment</span>
             <span class="result-value" id="roi">—</span>
           </div>
         </div>
@@ -77,9 +81,9 @@
         <footer class="assumptions-footer">
           <h4>Assumptions</h4>
           <ul>
-            <li>Assuming 75% of alarm traffic will transition through the platform</li>
+            <li>75% of alarm traffic will transition through the platform</li>
             <li>Hold time on admin line: 120 seconds (2 minutes)</li>
-            <li>Number of callbacks needed: 2.7</li>
+            <li>Number of callbacks needed: 2</li>
             <!--<li>Time per callback: 60 seconds</li>
             <li>Average telecommunicator processing time: 120 seconds</li>
             <li>ASAP Service alarm request processing time: 20 seconds</li>

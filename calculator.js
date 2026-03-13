@@ -35,7 +35,7 @@
   const DEFAULTS = {
     asapTransitionPct: 0.75,
     holdTime: 120,
-    numCallbacks: 2.7,
+    numCallbacks: 2,
     callbackTime: 60,
     processingTime: 120,
     asapProcessingTime: 20,
@@ -83,7 +83,7 @@
 
   function formatNumber(value, decimals) {
     if (value == null || isNaN(value)) return '—';
-    const d = decimals ?? 2;
+    const d = decimals ?? 1;
     return (Math.round(value * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d);
   }
 
@@ -146,10 +146,11 @@
 
     // Minutes to dispatch saved per incident (Excel: G36/60 = G37)
     const minutesDispatchSaved = secondsSavedPerAlarm / 60;
+    const minutesTcTimeSaved = secondsSavedPerAlarm / 60;
 
     return {
       minutesDispatchSaved,
-      secondsSavedPerAlarm,
+      minutesTcTimeSaved,
       monthlyReallocatedHours,
       monthlyValue,
       annualValue,
@@ -163,15 +164,15 @@
     setOutput(
       OUTPUTS.minutesDispatchSaved,
       result.minutesDispatchSaved,
-      (v) => (v == null || isNaN(v) ? '0' : formatNumber(v, 2))
+      (v) => (v == null || isNaN(v) ? '0' : formatNumber(v, 1))
     );
     setOutput(
       OUTPUTS.tcTimeSaved,
-      result.secondsSavedPerAlarm,
-      (v) => (v == null || isNaN(v) ? '0' : Math.round(v).toString())
+      result.minutesTcTimeSaved,
+      (v) => (v == null || isNaN(v) ? '0' : formatNumber(v, 1))
     );
     setOutput(OUTPUTS.monthlyHoursSaved, result.monthlyReallocatedHours, (v) =>
-      formatNumber(v, 2)
+      formatNumber(v, 1)
     );
     setOutput(OUTPUTS.monthlyValue, result.monthlyValue, formatCurrency);
     setOutput(OUTPUTS.annualValue, result.annualValue, formatCurrency);

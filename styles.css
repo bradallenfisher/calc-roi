@@ -101,6 +101,17 @@ body {
   gap: 1.25rem;
 }
 
+.results-value-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
+
+.results-value-row + .results-grid {
+  margin-top: 1.25rem;
+}
+
 .result-cell {
   display: flex;
   flex-direction: column;
