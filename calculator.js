@@ -106,7 +106,7 @@
         return { numeric: months, display: formatNumber(months, 1) };
       }
     }
-    return { numeric: null, display: '>5' };
+    return { numeric: null, display: 'More than 5 Years' };
   }
 
   function validateInputs(data) {

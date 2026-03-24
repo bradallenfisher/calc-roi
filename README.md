@@ -37,7 +37,7 @@ Interactive demo calculator for ASAP Service ROI. Static HTML + Vanilla JavaScri
 - **Total time including hold:** `holdPerCall × (1 + callbacks) + initialProcessing + callbacks × timePerCallback`
 - **Monthly reallocated (minutes):** `transitionedAlarms × (initialProcessing + callbacks × timePerCallback)` — hold excluded for ECC reallocation.
 - **ROI:** `(annualValue − recurring) / ABS(upfront) + COLA` (decimal COLA, display as %).
-- **Payback (months):** nested rule comparing `(upfront + n×recurring) / monthlyValue` to thresholds 12, 24, 36, 48, 60; otherwise display `>5`.
+- **Payback (months):** nested rule comparing `(upfront + n×recurring) / monthlyValue` to thresholds 12, 24, 36, 48, 60; otherwise display **More than 5 Years**.
 
 ## Cost Lookups (Categories sheet)
 
