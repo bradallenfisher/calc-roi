@@ -2,6 +2,8 @@
 
 Interactive demo calculator for ASAP Service ROI. Static HTML + Vanilla JavaScript, runs client-side with no backend.
 
+**Calculation source:** `ASAP ECC ROI Calculator 20260324 JS.xlsx` (Calc sheet). Cost tiers: Categories sheet (same as ROI Cost Categories).
+
 ## Quick Start
 
 1. Open `index.html` in a browser, or serve locally:
@@ -27,8 +29,17 @@ Interactive demo calculator for ASAP Service ROI. Static HTML + Vanilla JavaScri
 - Monthly Value of Reallocated Time
 - Annual Value of Reallocated Time
 - Return on Investment
+- Payback Period (months)
 
-## Cost Lookups (ROI Cost Categories 20260227 JS.xlsx)
+## Key formulas (from Calc sheet)
+
+- Times are in **minutes** (ASAP processing = 20/60 min).
+- **Total time including hold:** `holdPerCall × (1 + callbacks) + initialProcessing + callbacks × timePerCallback`
+- **Monthly reallocated (minutes):** `transitionedAlarms × (initialProcessing + callbacks × timePerCallback)` — hold excluded for ECC reallocation.
+- **ROI:** `(annualValue − recurring) / ABS(upfront) + COLA` (decimal COLA, display as %).
+- **Payback (months):** nested rule comparing `(upfront + n×recurring) / monthlyValue` to thresholds 12, 24, 36, 48, 60; otherwise display `>5`.
+
+## Cost Lookups (Categories sheet)
 
 | Population | Upfront Cost | Recurring/Year |
 |------------|--------------|----------------|
@@ -41,23 +52,14 @@ Interactive demo calculator for ASAP Service ROI. Static HTML + Vanilla JavaScri
 
 ```
 calcroi/
-├── index.html      # Main app
-├── styles.css      # Layout & styling
-├── calculator.js   # Calculation logic
-├── PRD.md          # Product requirements (legacy)
-├── requirements.txt
-├── extract_excel_formulas.py   # Extracts formulas from Excel (requires venv)
-├── ROI Cost Categories 20260227 JS.xlsx   # Cost lookup source
-└── venv/           # Python venv for openpyxl
+├── index.html
+├── styles.css
+├── calculator.js
+├── ASAP ECC ROI Calculator 20260324 JS.xlsx
+├── extract_excel_formulas.py
+└── venv/
 ```
 
-## Assumptions (from footer)
+## Assumptions (see footer in app)
 
-- 75% of alarm traffic will transition
-- Hold time: 120 sec (2 min)
-- Callbacks: 2
-- Time per callback: 60 sec
-- Processing time: 120 sec
-- ASAP processing time: 20 sec
-- Annual compensation: $79,500
-- COLA: 3%
+- 75% transition; hold 2 min/call; initial call 1.5 min; 2 callbacks at 1 min; ASAP 20 sec; $79,500 comp; 3% COLA.

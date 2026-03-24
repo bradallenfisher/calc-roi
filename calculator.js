@@ -1,14 +1,12 @@
 /**
  * ASAP ECC ROI Calculator
- * Based on ROI Cost Categories 20260227 JS.xlsx
- * Formulas from original ASAP ECC ROI Calculator 20260130 JS.xlsx
+ * Based on ASAP ECC ROI Calculator 20260324 JS.xlsx (Calc sheet)
+ * Cost tiers from Categories sheet (same as ROI Cost Categories)
  */
 
 (function () {
   'use strict';
 
-  // Cost lookup table from ROI Cost Categories 20260227 JS.xlsx
-  // Tier 0: pop >= 2.5M, Tier 1: 500K-2.5M, Tier 2: 100K-500K, Tier 3: < 100K
   const COST_TIERS = [
     { popMin: 2500000, popMax: null, upfront: 82160, recurring: 4500 },
     { popMin: 500000, popMax: 2499999, upfront: 56080, recurring: 3600 },
@@ -28,17 +26,18 @@
     monthlyHoursSaved: 'monthly-hours-saved',
     monthlyValue: 'monthly-value',
     annualValue: 'annual-value',
-    roi: 'roi'
+    roi: 'roi',
+    paybackMonths: 'payback-months'
   };
 
-  // Hidden/default values (from assumptions footer)
+  // Defaults match Calc sheet G column (minutes unless noted)
   const DEFAULTS = {
     asapTransitionPct: 0.75,
-    holdTime: 120,
-    numCallbacks: 2,
-    callbackTime: 60,
-    processingTime: 120,
-    asapProcessingTime: 20,
+    holdMinutesPerCall: 2,
+    numCallbacksAfterFirst: 2,
+    initialProcessingMinutes: 1.5,
+    timePerCallbackMinutes: 1,
+    asapProcessingMinutes: 20 / 60,
     annualCompensation: 79500,
     colaPercent: 0.03
   };
@@ -87,6 +86,29 @@
     return (Math.round(value * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d);
   }
 
+  /**
+   * Payback months — Excel G34:
+   * nested IF on (upfront + n*recurring) / monthlyValue vs 12,24,36,48,60
+   */
+  function computePaybackMonths(upfront, recurring, monthlyValue) {
+    if (monthlyValue <= 0) return { numeric: null, display: '—' };
+    const m = monthlyValue;
+    const checks = [
+      { threshold: 12, cost: upfront },
+      { threshold: 24, cost: upfront + recurring },
+      { threshold: 36, cost: upfront + recurring * 2 },
+      { threshold: 48, cost: upfront + recurring * 3 },
+      { threshold: 60, cost: upfront + recurring * 4 }
+    ];
+    for (const { threshold, cost } of checks) {
+      const months = cost / m;
+      if (months < threshold) {
+        return { numeric: months, display: formatNumber(months, 1) };
+      }
+    }
+    return { numeric: null, display: '>5' };
+  }
+
   function validateInputs(data) {
     const errors = [];
     if (data.populationServed == null || data.populationServed <= 0) {
@@ -111,7 +133,6 @@
       return null;
     }
 
-    // Monthly alarm requests: 10% of 911 calls if not provided
     if (monthlyAlarmRequests == null || monthlyAlarmRequests <= 0) {
       monthlyAlarmRequests = Math.round(monthly911Calls * 0.1);
     }
@@ -120,17 +141,29 @@
 
     const transitionedRequests = monthlyAlarmRequests * DEFAULTS.asapTransitionPct;
 
-    const currentDispatchTime =
-      DEFAULTS.holdTime +
-      DEFAULTS.numCallbacks * DEFAULTS.callbackTime +
-      DEFAULTS.processingTime;
-    const secondsSavedPerAlarm = currentDispatchTime - DEFAULTS.asapProcessingTime;
+    const g13 = DEFAULTS.numCallbacksAfterFirst;
+    const g14 = DEFAULTS.timePerCallbackMinutes;
+    const g15 = g13 * g14;
+    const g12 = DEFAULTS.initialProcessingMinutes;
+    const g11 = DEFAULTS.holdMinutesPerCall;
 
-    // Monthly reallocated hours (hold time excluded per original spreadsheet)
-    const monthlyReallocatedHours =
-      (transitionedRequests *
-        (DEFAULTS.numCallbacks * DEFAULTS.callbackTime + DEFAULTS.processingTime)) /
-      3600;
+    // G16: Total time including hold (minutes)
+    const totalTimeIncludingHold = g11 * (1 + g13) + g12 + g15;
+
+    const asapMin = DEFAULTS.asapProcessingMinutes;
+
+    // G36: Reduction in time to dispatch an alarm request (full path, minutes)
+    const minutesDispatchSaved = totalTimeIncludingHold - asapMin;
+
+    // ECC-only talk time reallocated: SUM(G12,G15) − G18 (transcript: 3.5 min vs ASAP)
+    const eccMinutesBeforeAsap = g12 + g15;
+    const minutesTcTimeSaved = eccMinutesBeforeAsap - asapMin;
+
+    // G20: Monthly reallocated telecommunicator time (minutes) — hold excluded
+    const monthlyReallocatedMinutes = transitionedRequests * eccMinutesBeforeAsap;
+
+    // G21: Hours per month
+    const monthlyReallocatedHours = monthlyReallocatedMinutes / 60;
 
     const hourlyRate = DEFAULTS.annualCompensation / 2080;
     const monthlyValue = monthlyReallocatedHours * hourlyRate;
@@ -144,9 +177,7 @@
         ((annualValue - recurringCost) / Math.abs(upfrontCost) + DEFAULTS.colaPercent) * 100;
     }
 
-    // Minutes to dispatch saved per incident (Excel: G36/60 = G37)
-    const minutesDispatchSaved = secondsSavedPerAlarm / 60;
-    const minutesTcTimeSaved = secondsSavedPerAlarm / 60;
+    const payback = computePaybackMonths(upfrontCost, recurringCost, monthlyValue);
 
     return {
       minutesDispatchSaved,
@@ -154,7 +185,8 @@
       monthlyReallocatedHours,
       monthlyValue,
       annualValue,
-      roi
+      roi,
+      payback
     };
   }
 
@@ -179,6 +211,7 @@
     setOutput(OUTPUTS.roi, result.roi, (v) =>
       v == null ? 'N/A' : formatPercent(v)
     );
+    setOutput(OUTPUTS.paybackMonths, result.payback.display);
   }
 
   function runCalculation() {
