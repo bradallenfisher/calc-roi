@@ -2,7 +2,7 @@
 
 Interactive demo calculator for ASAP Service ROI. Static HTML + Vanilla JavaScript, runs client-side with no backend.
 
-**Calculation source:** `ASAP ECC ROI Calculator 20260324 JS.xlsx` (Calc sheet). Cost tiers: Categories sheet (same as ROI Cost Categories).
+**Calculation source:** `ASAP ECC ROI Calculator 20260406 JS.xlsx` (Calc sheet). Cost tiers: Categories sheet.
 
 ## Quick Start
 
@@ -34,8 +34,9 @@ Interactive demo calculator for ASAP Service ROI. Static HTML + Vanilla JavaScri
 ## Key formulas (from Calc sheet)
 
 - Times are in **minutes** (ASAP processing = 20/60 min).
-- **Total time including hold:** `holdPerCall × (1 + callbacks) + initialProcessing + callbacks × timePerCallback`
-- **Monthly reallocated (minutes):** `transitionedAlarms × (initialProcessing + callbacks × timePerCallback)` — hold excluded for ECC reallocation.
+- **Time needed to dispatch if phone-based (minutes):** `(hold + initialConversation) + (hold + firstFollowOnConversation)`
+- **ECC telecommunicator time per alarm request (minutes):** `initialConversation + firstFollowOnConversation + secondFollowOnDebrief`
+- **Monthly reallocated (minutes):** `transitionedAlarms × ECC_telecommunicator_time` (hold excluded).
 - **ROI:** `(annualValue − recurring) / ABS(upfront) + COLA` (decimal COLA, display as %).
 - **Payback (months):** nested rule comparing `(upfront + n×recurring) / monthlyValue` to thresholds 12, 24, 36, 48, 60; otherwise display **More than 5 Years**.
 
@@ -62,4 +63,4 @@ calcroi/
 
 ## Assumptions (see footer in app)
 
-- 75% transition; hold 2 min/call; initial call 1.5 min; 2 callbacks at 1 min; ASAP 20 sec; $79,500 comp; 3% COLA.
+- 75% transition; hold 2 min/call; initial conversation 1.5 min; first follow-on 0.5 min; second follow-on debrief 1.5 min; ASAP 20 sec; $79,500 comp; 3% COLA.

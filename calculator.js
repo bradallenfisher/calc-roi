@@ -1,7 +1,7 @@
 /**
  * ASAP ECC ROI Calculator
- * Based on ASAP ECC ROI Calculator 20260324 JS.xlsx (Calc sheet)
- * Cost tiers from Categories sheet (same as ROI Cost Categories)
+ * Based on ASAP ECC ROI Calculator 20260406 JS.xlsx (Calc sheet)
+ * Cost tiers from Categories sheet.
  */
 
 (function () {
@@ -36,7 +36,8 @@
     holdMinutesPerCall: 2,
     numCallbacksAfterFirst: 2,
     initialProcessingMinutes: 1.5,
-    timePerCallbackMinutes: 1,
+    timePerFirstCallbackMinutes: 0.5,
+    timePerSecondCallbackMinutes: 1.5,
     asapProcessingMinutes: 20 / 60,
     annualCompensation: 79500,
     colaPercent: 0.03
@@ -141,26 +142,32 @@
 
     const transitionedRequests = monthlyAlarmRequests * DEFAULTS.asapTransitionPct;
 
-    const g13 = DEFAULTS.numCallbacksAfterFirst;
-    const g14 = DEFAULTS.timePerCallbackMinutes;
-    const g15 = g13 * g14;
-    const g12 = DEFAULTS.initialProcessingMinutes;
+    // Calc sheet mapping:
+    // G11 hold per call, G12 initial processing, G13 callbacks after first call
+    // G14 time per first callback (dispatch-relevant), G17 time per second callback (post-incident debrief)
     const g11 = DEFAULTS.holdMinutesPerCall;
+    const g12 = DEFAULTS.initialProcessingMinutes;
+    const g13 = DEFAULTS.numCallbacksAfterFirst;
+    const g14 = DEFAULTS.timePerFirstCallbackMinutes;
+    const g17 = DEFAULTS.timePerSecondCallbackMinutes;
 
-    // G16: Total time including hold (minutes)
-    const totalTimeIncludingHold = g11 * (1 + g13) + g12 + g15;
+    // G15: time needed to dispatch if phone-based (minutes)
+    const g15 = (g11 + g12) + (g11 + g14);
+
+    // G18: ECC telecommunicator time needed per alarm request (minutes)
+    const g18 = g12 + g14 + g17;
 
     const asapMin = DEFAULTS.asapProcessingMinutes;
 
-    // G36: Reduction in time to dispatch an alarm request (full path, minutes)
-    const minutesDispatchSaved = totalTimeIncludingHold - asapMin;
+    // G39: reduction in time needed to dispatch an alarm request (minutes)
+    const minutesDispatchSaved = g15 - asapMin;
 
-    // ECC-only talk time reallocated: SUM(G12,G15) − G18 (transcript: 3.5 min vs ASAP)
-    const eccMinutesBeforeAsap = g12 + g15;
-    const minutesTcTimeSaved = eccMinutesBeforeAsap - asapMin;
+    // Outputs sheet expects “Telecommunicator Time Saved/Incident”.
+    // Calc sheet “ECC telecommunicator time needed per alarm request” includes post-dispatch debrief.
+    const minutesTcTimeSaved = g18 - asapMin;
 
-    // G20: Monthly reallocated telecommunicator time (minutes) — hold excluded
-    const monthlyReallocatedMinutes = transitionedRequests * eccMinutesBeforeAsap;
+    // G23: monthly reallocated telecommunicator time (minutes)
+    const monthlyReallocatedMinutes = transitionedRequests * g18;
 
     // G21: Hours per month
     const monthlyReallocatedHours = monthlyReallocatedMinutes / 60;
