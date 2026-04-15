@@ -63,4 +63,4 @@ calcroi/
 
 ## Assumptions (see footer in app)
 
-- 75% transition; hold 2 min/call; initial conversation 1.5 min; first follow-on 0.5 min; second follow-on debrief 1.5 min; ASAP 20 sec; $79,500 comp; 3% COLA.
+- 75% transition; hold 2 min/call; initial conversation 1.5 min; first follow-on 0.5 min; second follow-on debrief 1.5 min; ASAP 20 sec; $79,500 comp; 3% COLA.\n+- **Telecommunicator time saved per incident** equals **G18** (no subtraction of ASAP time), because ASAP dispatch requires no telecommunicator involvement.

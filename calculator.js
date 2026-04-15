@@ -163,8 +163,9 @@
     const minutesDispatchSaved = g15 - asapMin;
 
     // Outputs sheet expects “Telecommunicator Time Saved/Incident”.
-    // Calc sheet “ECC telecommunicator time needed per alarm request” includes post-dispatch debrief.
-    const minutesTcTimeSaved = g18 - asapMin;
+    // Per 20260415 update: this should equal G18 (no subtraction of ASAP time),
+    // because ASAP dispatch requires no telecommunicator involvement.
+    const minutesTcTimeSaved = g18;
 
     // G23: monthly reallocated telecommunicator time (minutes)
     const monthlyReallocatedMinutes = transitionedRequests * g18;
