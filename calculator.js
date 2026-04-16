@@ -87,6 +87,16 @@
     return (Math.round(value * Math.pow(10, d)) / Math.pow(10, d)).toFixed(d);
   }
 
+  function formatCeilInt(value) {
+    if (value == null || isNaN(value)) return '—';
+    return String(Math.ceil(value));
+  }
+
+  function formatCeilPercent(value) {
+    if (value == null || isNaN(value)) return '—';
+    return String(Math.ceil(value)) + '%';
+  }
+
   /**
    * Payback months — Excel G34:
    * nested IF on (upfront + n*recurring) / monthlyValue vs 12,24,36,48,60
@@ -104,7 +114,7 @@
     for (const { threshold, cost } of checks) {
       const months = cost / m;
       if (months < threshold) {
-        return { numeric: months, display: formatNumber(months, 1) };
+        return { numeric: months, display: String(Math.ceil(months)) };
       }
     }
     return { numeric: null, display: 'More than 5 Years' };
@@ -212,12 +222,12 @@
       (v) => (v == null || isNaN(v) ? '0' : formatNumber(v, 1))
     );
     setOutput(OUTPUTS.monthlyHoursSaved, result.monthlyReallocatedHours, (v) =>
-      formatNumber(v, 1)
+      formatCeilInt(v)
     );
     setOutput(OUTPUTS.monthlyValue, result.monthlyValue, formatCurrency);
     setOutput(OUTPUTS.annualValue, result.annualValue, formatCurrency);
     setOutput(OUTPUTS.roi, result.roi, (v) =>
-      v == null ? 'N/A' : formatPercent(v)
+      v == null ? 'N/A' : formatCeilPercent(v)
     );
     setOutput(OUTPUTS.paybackMonths, result.payback.display);
   }
